@@ -96,7 +96,8 @@ export default function StepMedia() {
                     if(btn) btn.innerText = "Pensando e gerando...";
                     
                     try {
-                        const prompt = encodeURIComponent(`cinematic macro photography of ${briefing.productName || "a luxury product"}, highly detailed, 8k resolution, studio lighting, hyperrealistic, professional product showcase`);
+                        const basePrompt = `cinematic lifestyle photography of ${briefing.productName || "a luxury product"} in a natural environment, held or used by an authentic brazilian person with clear natural skin, realistic brazilian features, hyperrealistic, professional 8k resolution, no foreign stereotypes, perfect product showcase`;
+                        const prompt = encodeURIComponent(basePrompt);
                         const url = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1920&nologo=true&seed=${Math.floor(Math.random() * 10000)}`;
                         
                         const res = await fetch(url);
