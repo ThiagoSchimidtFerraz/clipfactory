@@ -40,9 +40,30 @@ export default function StepAssembly() {
       const audioUrl = briefing.generatedAudioUrl || "https://www.w3schools.com/html/horse.mp3";
       await ffmpeg.writeFile('audio.mp3', await fetchFile(audioUrl));
 
-      // 2. Pega uma imagem sólida de fundo preta se ele n subiu nada, ou usa a primeira
-      // Para o teste rápido, vamos usar uma cor preta sólida se faltar asset.
-      await ffmpeg.writeFile('image.png', await fetchFile('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')); // 1x1 black pixel
+      // 2. Cria um fundo bonito dinâmico (Gradient Azul) para evitar tela preta
+      const canvas = document.createElement('canvas');
+      canvas.width = 1080;
+      canvas.height = 1920;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const grd = ctx.createLinearGradient(0, 0, 1080, 1920);
+        grd.addColorStop(0, '#050505');
+        grd.addColorStop(0.5, '#001a4d');
+        grd.addColorStop(1, '#00E5FF');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, 1080, 1920);
+        
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 80px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Digital Growth Clips', 540, 800);
+        
+        ctx.font = '40px sans-serif';
+        ctx.fillStyle = '#00E5FF';
+        ctx.fillText('Seu vídeo de altíssima conversão', 540, 900);
+      }
+      const dataUrl = canvas.toDataURL('image/png');
+      await ffmpeg.writeFile('image.png', await fetchFile(dataUrl));
 
       // 3. Executa o comando FFmpeg (1 imagem estática + áudio)
       // Ajusta para ficar no formato 9:16 ou 16:9

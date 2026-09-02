@@ -99,7 +99,20 @@ export default function StepScript() {
           Voltar
         </Button>
         <Button
-          onClick={nextStep}
+          onClick={() => {
+            const updated = [...scripts];
+            if (updated.length === 0) {
+              updated.push({ id: '1', title: 'Custom', content: customText, takes: [] });
+            } else {
+              if (!updated[selectedScript]) {
+                  updated[selectedScript] = { id: '1', title: 'Custom', content: customText, takes: [] };
+              } else {
+                  updated[selectedScript].content = customText;
+              }
+            }
+            useClipStore.getState().setScripts(updated);
+            nextStep();
+          }}
           disabled={customText.length < 10}
           className="bg-gradient-to-r from-[#0047FF] to-[#00E5FF] hover:from-[#0033CC] hover:to-[#00CCEE] text-white font-semibold text-sm px-8 h-11 rounded-lg transition-all shadow-[0_0_20px_rgba(0,119,255,0.3)] hover:shadow-[0_0_25px_rgba(0,229,255,0.5)] disabled:opacity-50 disabled:shadow-none"
         >
