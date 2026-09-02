@@ -40,33 +40,32 @@ export default function StepAssembly() {
       const audioUrl = briefing.generatedAudioUrl || "https://www.w3schools.com/html/horse.mp3";
       await ffmpeg.writeFile('audio.mp3', await fetchFile(audioUrl));
 
-      // 2. Cria um fundo bonito dinâmico (Gradient Azul) para evitar tela preta
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const grd = ctx.createLinearGradient(0, 0, 1080, 1920);
-        grd.addColorStop(0, '#050505');
-        grd.addColorStop(0.5, '#001a4d');
-        grd.addColorStop(1, '#00E5FF');
-        ctx.fillStyle = grd;
-        ctx.fillRect(0, 0, 1080, 1920);
+      // 2. Pega as imagens que o usuário subiu no briefing, ou usa uma imagem Premium de fallback
+      const imageUrl = (briefing.images && briefing.images.length > 0) 
+        ? briefing.images[0] 
+        : 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1080&h=1920&auto=format&fit=crop'; // Fone de ouvido premium como fallback
         
-        ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 80px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Digital Growth Clips', 540, 800);
-        
-        ctx.font = '40px sans-serif';
-        ctx.fillStyle = '#00E5FF';
-        ctx.fillText('Seu vídeo de altíssima conversão', 540, 900);
+      try {
+        await ffmpeg.writeFile('image.png', await fetchFile(imageUrl));
+      } catch (e) {
+        // Se der erro de CORS, a gente faz o fallback seguro desenhando num canvas invisível com proxy de imagem ou cor sólida
+        console.warn("Erro ao baixar imagem principal, usando fallback seguro", e);
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080; canvas.height = 1920;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#111111';
+          ctx.fillRect(0, 0, 1080, 1920);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = 'bold 80px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('Produto Premium', 540, 960);
+        }
+        await ffmpeg.writeFile('image.png', await fetchFile(canvas.toDataURL('image/png')));
       }
-      const dataUrl = canvas.toDataURL('image/png');
-      await ffmpeg.writeFile('image.png', await fetchFile(dataUrl));
 
       // 3. Executa o comando FFmpeg (1 imagem estática + áudio)
-      // Ajusta para ficar no formato 9:16 ou 16:9
+      // Ajusta para ficar no formato 9:16
       await ffmpeg.exec([
         '-loop', '1', 
         '-i', 'image.png',
@@ -76,7 +75,7 @@ export default function StepAssembly() {
         '-b:a', '192k',
         '-pix_fmt', 'yuv420p',
         '-shortest',
-        '-s', '1080x1920', // Teste fixo 9:16
+        '-s', '1080x1920', // Fixa o tamanho
         'output.mp4'
       ]);
 
@@ -103,7 +102,7 @@ export default function StepAssembly() {
         <p className="text-[#A3A3A3] text-sm font-medium">
           {status === "idle" && "Seu vídeo está pronto para ser costurado (Imagens + Áudio + Legendas)."}
           {status === "downloading" && "Baixando vozes neurais e recursos..."}
-          {status === "rendering" && "Renderizando o vídeo usando a CPU do seu computador (custo zero de servidor!)."}
+          {status === "rendering" && "Renderizando o vídeo final usando Inteligência Artificial e FFmpeg."}
           {status === "done" && "Seu vídeo está pronto para fazer suas vendas decolarem."}
         </p>
       </div>
