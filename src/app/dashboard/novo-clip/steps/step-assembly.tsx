@@ -65,17 +65,19 @@ export default function StepAssembly() {
       }
 
       // 3. Executa o comando FFmpeg (1 imagem estática + áudio)
-      // Ajusta para ficar no formato 9:16
+      // Ajusta para ficar no formato 9:16 e adiciona movimento cinematográfico
       await ffmpeg.exec([
         '-loop', '1', 
         '-i', 'image.png',
         '-i', 'audio.mp3',
+        '-filter_complex', '[0:v]scale=-2:2000,crop=1080:1920,zoompan=z=\'min(zoom+0.001,1.5)\':d=1500:x=\'iw/2-(iw/zoom/2)\':y=\'ih/2-(ih/zoom/2)\':s=1080x1920[v]',
+        '-map', '[v]',
+        '-map', '1:a',
         '-c:v', 'libx264',
         '-c:a', 'aac',
         '-b:a', '192k',
         '-pix_fmt', 'yuv420p',
         '-shortest',
-        '-s', '1080x1920', // Fixa o tamanho
         'output.mp4'
       ]);
 
