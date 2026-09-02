@@ -64,15 +64,23 @@ export default function StepAssembly() {
         await ffmpeg.writeFile('image.png', await fetchFile(canvas.toDataURL('image/png')));
       }
 
-      // 3. Executa o comando FFmpeg (1 imagem estática + áudio)
-      // Ajusta para ficar no formato 9:16 e adiciona movimento cinematográfico
+      // 2.5 Baixa uma música de fundo royalty-free cinematográfica/lifestyle
+      try {
+        await ffmpeg.writeFile('music.mp3', await fetchFile('https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3'));
+      } catch (e) {
+        console.warn("Erro ao baixar música, usando sem música");
+      }
+
+      // 3. Executa o comando FFmpeg (1 imagem estática + áudio voz + música fundo)
+      // Ajusta para ficar no formato 9:16, adiciona movimento cinematográfico e mixa áudios
       await ffmpeg.exec([
         '-loop', '1', 
         '-i', 'image.png',
         '-i', 'audio.mp3',
-        '-filter_complex', '[0:v]scale=-2:2000,crop=1080:1920,zoompan=z=\'min(zoom+0.001,1.5)\':d=1500:x=\'iw/2-(iw/zoom/2)\':y=\'ih/2-(ih/zoom/2)\':s=1080x1920[v]',
+        '-i', 'music.mp3',
+        '-filter_complex', '[0:v]scale=-2:2000,crop=1080:1920,zoompan=z=\'min(zoom+0.001,1.5)\':d=1500:x=\'iw/2-(iw/zoom/2)\':y=\'ih/2-(ih/zoom/2)\':s=1080x1920[v];[2:a]volume=0.15[bgm];[1:a][bgm]amix=inputs=2:duration=first[a]',
         '-map', '[v]',
-        '-map', '1:a',
+        '-map', '[a]',
         '-c:v', 'libx264',
         '-c:a', 'aac',
         '-b:a', '192k',
