@@ -50,41 +50,88 @@ export default function StepMedia() {
       {/* Header do Step */}
       <div className="space-y-2">
         <h2 className="text-2xl font-semibold text-white tracking-tight">
-          Anexe as Fotos do Produto
+          As Imagens do Produto
         </h2>
         <p className="text-[#A3A3A3] text-sm font-medium">
-          O roteiro e a voz estão prontos! Suba até 5 fotos reais do produto (usaremos elas no vídeo). O link do passo 1 foi usado só para criar a narração.
+          Você pode subir fotos reais ou deixar nossa IA Mágica gerar imagens conceituais do seu produto do zero!
         </p>
       </div>
 
       <div className="space-y-8">
-        {/* Upload Área */}
-        <div className="space-y-3">
-          <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Fotos do Produto (Max 5)</Label>
-          
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleRealUpload} 
-            accept="image/*" 
-            multiple 
-            className="hidden" 
-          />
+        
+        <div className="grid sm:grid-cols-2 gap-4">
+            {/* Upload Box */}
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Subir minhas fotos (Max 5)</Label>
+              
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleRealUpload} 
+                accept="image/*" 
+                multiple 
+                className="hidden" 
+              />
 
-          <div 
-            onClick={() => fileInputRef.current?.click()}
-            className="border border-dashed border-[#444] bg-[#0A0A0A] hover:bg-[#111] hover:border-[#0047FF] transition-all h-64 flex flex-col items-center justify-center cursor-pointer group rounded-xl"
-          >
-            <div className="w-16 h-16 bg-[#1A1A1A] group-hover:bg-[#0047FF]/20 rounded-full flex items-center justify-center mb-4 transition-colors">
-              <UploadCloud className="w-7 h-7 text-[#666] group-hover:text-[#00E5FF] transition-colors" />
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border border-dashed border-[#444] bg-[#0A0A0A] hover:bg-[#111] hover:border-[#0047FF] transition-all h-64 flex flex-col items-center justify-center cursor-pointer group rounded-xl"
+              >
+                <div className="w-16 h-16 bg-[#1A1A1A] group-hover:bg-[#0047FF]/20 rounded-full flex items-center justify-center mb-4 transition-colors">
+                  <UploadCloud className="w-7 h-7 text-[#666] group-hover:text-[#00E5FF] transition-colors" />
+                </div>
+                <span className="text-sm font-semibold text-white">Upload de Fotos Reais</span>
+                <span className="text-xs text-[#666] mt-2 text-center px-4">Suba as fotos da sua galeria</span>
+              </div>
             </div>
-            <span className="text-sm font-semibold text-white">Clique para selecionar as fotos reais</span>
-            <span className="text-xs text-[#666] mt-2">Nós vamos estampar essas fotos no vídeo renderizado.</span>
-          </div>
 
-          {/* Grid de miniaturas (Real) */}
-          {images.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pt-4">
+            {/* AI Generate Box */}
+            <div className="space-y-3">
+              <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Deixar a IA Criar</Label>
+              
+              <div 
+                onClick={async () => {
+                    if (images.length >= 5) return;
+                    const btn = document.getElementById("ai-btn-text");
+                    if(btn) btn.innerText = "Pensando e gerando...";
+                    
+                    try {
+                        const prompt = encodeURIComponent(`cinematic macro photography of ${briefing.productName || "a luxury product"}, highly detailed, 8k resolution, studio lighting, hyperrealistic, professional product showcase`);
+                        const url = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1920&nologo=true&seed=${Math.floor(Math.random() * 10000)}`;
+                        
+                        const res = await fetch(url);
+                        const blob = await res.blob();
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                            if(event.target?.result) {
+                                const current = useClipStore.getState().briefing.images || [];
+                                updateBriefing({ images: [...current, event.target.result as string] });
+                                if(btn) btn.innerText = "Gerar mais com IA";
+                            }
+                        };
+                        reader.readAsDataURL(blob);
+                    } catch (e) {
+                        alert("Erro ao gerar imagem");
+                        if(btn) btn.innerText = "Gerar Imagem com IA";
+                    }
+                }}
+                className="border border-[#333] bg-[#0A0A0A] hover:border-[#00E5FF] hover:shadow-[0_0_20px_rgba(0,229,255,0.15)] transition-all h-64 flex flex-col items-center justify-center cursor-pointer group rounded-xl relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-[#0047FF]/5 to-[#00E5FF]/5" />
+                <div className="w-16 h-16 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-4 transition-colors relative z-10 border border-[#222] group-hover:border-[#00E5FF]/50">
+                  <span className="text-2xl">✨</span>
+                </div>
+                <span id="ai-btn-text" className="text-sm font-semibold text-white relative z-10">Gerar Imagem com IA</span>
+                <span className="text-xs text-[#00E5FF] mt-2 text-center px-4 relative z-10">Totalmente automático e grátis</span>
+              </div>
+            </div>
+        </div>
+
+        {/* Grid de miniaturas */}
+        {images.length > 0 && (
+          <div className="space-y-3">
+             <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Imagens Prontas para o Vídeo</Label>
+             <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               {images.map((imgUrl, i) => (
                 <div key={i} className="aspect-square bg-[#1A1A1A] border border-[#333] relative flex items-center justify-center group rounded-lg overflow-hidden hover:border-[#00E5FF] transition-colors">
                   <img src={imgUrl} alt={`Produto ${i + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -97,8 +144,9 @@ export default function StepMedia() {
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
       </div>
 
       {/* Navegação */}
