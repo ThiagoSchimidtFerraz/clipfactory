@@ -97,22 +97,25 @@ export default function StepMedia() {
                     
                     try {
                         const basePrompt = `cinematic lifestyle photography of ${briefing.productName || "a luxury product"} in a natural environment, held or used by an authentic brazilian person with clear natural skin, realistic brazilian features, hyperrealistic, professional 8k resolution, no foreign stereotypes, perfect product showcase`;
-                        const prompt = encodeURIComponent(basePrompt);
-                        const url = `https://image.pollinations.ai/prompt/${prompt}?width=1080&height=1920&nologo=true&seed=${Math.floor(Math.random() * 10000)}`;
                         
-                        const res = await fetch(url);
-                        const blob = await res.blob();
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            if(event.target?.result) {
-                                const current = useClipStore.getState().briefing.images || [];
-                                updateBriefing({ images: [...current, event.target.result as string] });
-                                if(btn) btn.innerText = "Gerar mais com IA";
-                            }
-                        };
-                        reader.readAsDataURL(blob);
+                        const res = await fetch("/api/generate-image", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ prompt: basePrompt })
+                        });
+                        
+                        const data = await res.json();
+                        
+                        if (data.image) {
+                            const current = useClipStore.getState().briefing.images || [];
+                            updateBriefing({ images: [...current, data.image] });
+                            if(btn) btn.innerText = "Gerar mais com IA";
+                        } else {
+                            throw new Error(data.error || "Erro desconhecido");
+                        }
                     } catch (e) {
-                        alert("Erro ao gerar imagem");
+                        console.error(e);
+                        alert("Erro ao gerar imagem. Tente novamente.");
                         if(btn) btn.innerText = "Gerar Imagem com IA";
                     }
                 }}
