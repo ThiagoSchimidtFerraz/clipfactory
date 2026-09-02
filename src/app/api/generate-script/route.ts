@@ -27,7 +27,7 @@ A estrutura OBRIGATÓRIA deve ser:
 Não inclua cabeçalhos como "Gancho:" no meio do texto, me dê o texto corrido e pronto para ser copiado e colado num gerador de voz.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       contents: prompt,
     });
 
