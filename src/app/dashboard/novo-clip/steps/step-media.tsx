@@ -7,27 +7,41 @@ import {
   ArrowLeft,
   ArrowRight,
   UploadCloud,
-  Image as ImageIcon,
   X
 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useRef } from "react";
 
 export default function StepMedia() {
-  const { prevStep, nextStep } = useClipStore();
-  const [images, setImages] = useState<string[]>([]);
+  const { briefing, updateBriefing, prevStep, nextStep } = useClipStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const images = briefing.images || [];
 
   const handleRealUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newImages = Array.from(e.target.files).map(file => URL.createObjectURL(file));
-      // Limita a 5 arquivos totais
-      const combined = [...images, ...newImages].slice(0, 5);
-      setImages(combined);
+      if (images.length >= 5) return;
+      
+      Array.from(e.target.files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            const base64Str = event.target.result as string;
+            // Pega o estado mais recente para evitar overwrite race condition
+            const currentImages = useClipStore.getState().briefing.images || [];
+            if (currentImages.length < 5) {
+                updateBriefing({ images: [...currentImages, base64Str] });
+            }
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
   const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
+    const updated = [...images];
+    updated.splice(index, 1);
+    updateBriefing({ images: updated });
   };
 
   return (
@@ -39,7 +53,7 @@ export default function StepMedia() {
           Anexe as Fotos do Produto
         </h2>
         <p className="text-[#A3A3A3] text-sm font-medium">
-          O roteiro e a voz estão prontos! Suba até 5 fotos do produto que você quer vender (elas serão animadas no vídeo).
+          O roteiro e a voz estão prontos! Suba até 5 fotos reais do produto (usaremos elas no vídeo). O link do passo 1 foi usado só para criar a narração.
         </p>
       </div>
 
@@ -64,8 +78,8 @@ export default function StepMedia() {
             <div className="w-16 h-16 bg-[#1A1A1A] group-hover:bg-[#0047FF]/20 rounded-full flex items-center justify-center mb-4 transition-colors">
               <UploadCloud className="w-7 h-7 text-[#666] group-hover:text-[#00E5FF] transition-colors" />
             </div>
-            <span className="text-sm font-semibold text-white">Clique para selecionar as fotos</span>
-            <span className="text-xs text-[#666] mt-2">Formatos aceitos: JPG, PNG, WEBP</span>
+            <span className="text-sm font-semibold text-white">Clique para selecionar as fotos reais</span>
+            <span className="text-xs text-[#666] mt-2">Nós vamos estampar essas fotos no vídeo renderizado.</span>
           </div>
 
           {/* Grid de miniaturas (Real) */}
