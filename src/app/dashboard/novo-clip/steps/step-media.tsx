@@ -96,46 +96,93 @@ export default function StepMedia() {
                     className="w-full bg-[#0A0A0A] border border-[#333] hover:border-[#00E5FF] focus:border-[#00E5FF] transition-all text-white p-3 rounded-lg text-sm resize-none h-20 outline-none"
                   />
                   
-                  <div 
-                    onClick={async () => {
-                        if (images.length >= 5) return;
-                        const btn = document.getElementById("ai-btn-text");
-                        const scenarioInput = document.getElementById("ai-scenario-input") as HTMLTextAreaElement;
-                        const customScenario = scenarioInput?.value || "in a natural environment";
-                        
-                        if(btn) btn.innerText = "Pensando e gerando...";
-                        
-                        try {
-                            const basePrompt = `cinematic lifestyle photography of ${briefing.productName || "a luxury product"}, ${customScenario}, held or used by an authentic brazilian person with clear natural skin, realistic brazilian features, hyperrealistic, professional 8k resolution, no foreign stereotypes, perfect product showcase`;
+                  <div className="flex gap-2 flex-1">
+                      {/* Botão de Imagem IA */}
+                      <div 
+                        onClick={async () => {
+                            if (images.length >= 5) return;
+                            const btn = document.getElementById("ai-btn-text");
+                            const scenarioInput = document.getElementById("ai-scenario-input") as HTMLTextAreaElement;
+                            const customScenario = scenarioInput?.value || "in a natural environment";
                             
-                            const res = await fetch("/api/generate-image", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ prompt: basePrompt })
-                            });
+                            if(btn) btn.innerText = "...";
                             
-                            const data = await res.json();
-                            
-                            if (data.image) {
-                                const current = useClipStore.getState().briefing.images || [];
-                                updateBriefing({ images: [...current, data.image] });
-                                if(btn) btn.innerText = "Gerar Imagem com IA";
-                            } else {
-                                throw new Error(data.error || "Erro desconhecido");
+                            try {
+                                const basePrompt = `cinematic lifestyle photography of ${briefing.productName || "a luxury product"}, ${customScenario}, held or used by an authentic brazilian person with clear natural skin, realistic brazilian features, hyperrealistic, professional 8k resolution, no foreign stereotypes, perfect product showcase`;
+                                
+                                const res = await fetch("/api/generate-image", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ prompt: basePrompt })
+                                });
+                                
+                                const data = await res.json();
+                                
+                                if (data.image) {
+                                    const current = useClipStore.getState().briefing.images || [];
+                                    updateBriefing({ images: [...current, data.image] });
+                                    if(btn) btn.innerText = "Gerar Imagem";
+                                } else {
+                                    throw new Error(data.error || "Erro desconhecido");
+                                }
+                            } catch (e) {
+                                console.error(e);
+                                alert("Erro ao gerar imagem. Tente novamente.");
+                                if(btn) btn.innerText = "Gerar Imagem";
                             }
-                        } catch (e) {
-                            console.error(e);
-                            alert("Erro ao gerar imagem. Tente novamente.");
-                            if(btn) btn.innerText = "Gerar Imagem com IA";
-                        }
-                    }}
-                    className="border border-[#333] bg-[#111] hover:border-[#00E5FF] hover:shadow-[0_0_20px_rgba(0,229,255,0.15)] transition-all flex-1 flex flex-col items-center justify-center cursor-pointer group rounded-xl relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#0047FF]/5 to-[#00E5FF]/5" />
-                    <div className="w-10 h-10 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-2 transition-colors relative z-10 border border-[#222] group-hover:border-[#00E5FF]/50">
-                      <span className="text-lg">✨</span>
-                    </div>
-                    <span id="ai-btn-text" className="text-sm font-semibold text-white relative z-10">Gerar Imagem com IA</span>
+                        }}
+                        className="border border-[#333] bg-[#111] hover:border-[#00E5FF] hover:shadow-[0_0_20px_rgba(0,229,255,0.15)] transition-all flex-1 flex flex-col items-center justify-center cursor-pointer group rounded-xl relative overflow-hidden"
+                      >
+                        <div className="w-8 h-8 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-2 transition-colors relative z-10 border border-[#222] group-hover:border-[#00E5FF]/50">
+                          <span className="text-lg">✨</span>
+                        </div>
+                        <span id="ai-btn-text" className="text-xs font-semibold text-white relative z-10">Gerar Imagem</span>
+                      </div>
+
+                      {/* Botão de Vídeo B-Roll (Pixabay) */}
+                      <div 
+                        onClick={async () => {
+                            if (images.length >= 5) return;
+                            const btn = document.getElementById("vid-btn-text");
+                            const scenarioInput = document.getElementById("ai-scenario-input") as HTMLTextAreaElement;
+                            const q = encodeURIComponent(scenarioInput?.value || briefing.productName || "lifestyle");
+                            
+                            if(btn) btn.innerText = "Buscando...";
+                            
+                            try {
+                                // Usa a chave fornecida pelo usuário
+                                const apiKey = "57387230-91862bf503483aead7cc2d79d";
+                                const url = `https://pixabay.com/api/videos/?key=${apiKey}&q=${q}&video_type=film&per_page=3&safesearch=true`;
+                                
+                                const res = await fetch(url);
+                                const data = await res.json();
+                                
+                                if (data.hits && data.hits.length > 0) {
+                                    // Pega o primeiro vídeo da busca (preferência por vídeos verticais ou o melhor tamanho)
+                                    const hit = data.hits[0];
+                                    const videoUrl = hit.videos.medium.url || hit.videos.tiny.url;
+                                    
+                                    const current = useClipStore.getState().briefing.images || [];
+                                    // Salvamos a URL do vídeo na lista (assembly.tsx vai detectar se for .mp4)
+                                    updateBriefing({ images: [...current, videoUrl] });
+                                    if(btn) btn.innerText = "Puxar Vídeo";
+                                } else {
+                                    alert("Nenhum vídeo encontrado para este cenário. Tente palavras em inglês (ex: runner, gym, office) para achar mais fácil.");
+                                    if(btn) btn.innerText = "Puxar Vídeo";
+                                }
+                            } catch (e) {
+                                console.error(e);
+                                alert("Erro ao buscar vídeo.");
+                                if(btn) btn.innerText = "Puxar Vídeo";
+                            }
+                        }}
+                        className="border border-[#333] bg-[#0047FF]/10 hover:border-[#0047FF] hover:shadow-[0_0_20px_rgba(0,71,255,0.2)] transition-all flex-1 flex flex-col items-center justify-center cursor-pointer group rounded-xl relative overflow-hidden"
+                      >
+                        <div className="w-8 h-8 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-2 transition-colors relative z-10 border border-[#222] group-hover:border-[#0047FF]/50">
+                          <span className="text-lg">🎬</span>
+                        </div>
+                        <span id="vid-btn-text" className="text-xs font-semibold text-white relative z-10 text-center">Puxar Vídeo<br/>Real</span>
+                      </div>
                   </div>
               </div>
             </div>
@@ -144,11 +191,15 @@ export default function StepMedia() {
         {/* Grid de miniaturas */}
         {images.length > 0 && (
           <div className="space-y-3">
-             <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Imagens Prontas para o Vídeo</Label>
+             <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Mídia Pronta para o Vídeo</Label>
              <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
               {images.map((imgUrl, i) => (
                 <div key={i} className="aspect-square bg-[#1A1A1A] border border-[#333] relative flex items-center justify-center group rounded-lg overflow-hidden hover:border-[#00E5FF] transition-colors">
-                  <img src={imgUrl} alt={`Produto ${i + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  {imgUrl.includes(".mp4") ? (
+                    <video src={imgUrl} autoPlay loop muted className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  ) : (
+                    <img src={imgUrl} alt={`Produto ${i + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  )}
                   <button 
                     onClick={(e) => { e.stopPropagation(); removeImage(i); }}
                     className="absolute top-2 right-2 w-7 h-7 bg-black/70 hover:bg-[#FF3366] text-white rounded-full flex items-center justify-center transition-colors shadow-lg"

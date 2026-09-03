@@ -40,54 +40,70 @@ export default function StepAssembly() {
       const audioUrl = briefing.generatedAudioUrl || "https://www.w3schools.com/html/horse.mp3";
       await ffmpeg.writeFile('audio.mp3', await fetchFile(audioUrl));
 
-      // 2. Pega as imagens que o usuário subiu no briefing, ou usa uma imagem Premium de fallback
-      const imageUrl = (briefing.images && briefing.images.length > 0) 
-        ? briefing.images[0] 
-        : 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1080&h=1920&auto=format&fit=crop'; // Fone de ouvido premium como fallback
-        
-      try {
-        await ffmpeg.writeFile('image.png', await fetchFile(imageUrl));
-      } catch (e) {
-        // Se der erro de CORS, a gente faz o fallback seguro desenhando num canvas invisível com proxy de imagem ou cor sólida
-        console.warn("Erro ao baixar imagem principal, usando fallback seguro", e);
-        const canvas = document.createElement('canvas');
-        canvas.width = 1080; canvas.height = 1920;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.fillStyle = '#111111';
-          ctx.fillRect(0, 0, 1080, 1920);
-          ctx.fillStyle = '#FFFFFF';
-          ctx.font = 'bold 80px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('Produto Premium', 540, 960);
+      // 2. Transforma a primeira mídia do state no arquivo de input do ffmpeg
+      const rawMedia = briefing.images && briefing.images.length > 0
+        ? briefing.images[0]
+        : "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1080&auto=format&fit=crop";
+
+      const isVideo = rawMedia.includes(".mp4");
+      const inputFilename = isVideo ? 'input_video.mp4' : 'image.png';
+
+      if (rawMedia.startsWith("data:image")) {
+        await ffmpeg.writeFile(inputFilename, await fetchFile(rawMedia));
+      } else {
+        // Usa um proxy ou baixa direto (Pixabay/Pexels costuma liberar CORS)
+        try {
+            await ffmpeg.writeFile(inputFilename, await fetchFile(rawMedia));
+        } catch (e) {
+            // Fallback caso dê erro de CORS no download direto
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(rawMedia)}`;
+            await ffmpeg.writeFile(inputFilename, await fetchFile(proxyUrl));
         }
-        await ffmpeg.writeFile('image.png', await fetchFile(canvas.toDataURL('image/png')));
       }
 
-      // 2.5 Baixa uma música de fundo royalty-free cinematográfica/lifestyle
+      // 2.5 Baixa uma música de fundo royalty-free
       try {
         await ffmpeg.writeFile('music.mp3', await fetchFile('https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3'));
       } catch (e) {
         console.warn("Erro ao baixar música, usando sem música");
       }
 
-      // 3. Executa o comando FFmpeg (1 imagem estática + áudio voz + música fundo)
-      // Ajusta para ficar no formato 9:16, adiciona movimento cinematográfico e mixa áudios
-      await ffmpeg.exec([
-        '-loop', '1', 
-        '-i', 'image.png',
-        '-i', 'audio.mp3',
-        '-i', 'music.mp3',
-        '-filter_complex', '[0:v]scale=-2:2000,crop=1080:1920,zoompan=z=\'min(zoom+0.001,1.5)\':d=1500:x=\'iw/2-(iw/zoom/2)\':y=\'ih/2-(ih/zoom/2)\':s=1080x1920[v];[2:a]volume=0.15[bgm];[1:a][bgm]amix=inputs=2:duration=first[a]',
-        '-map', '[v]',
-        '-map', '[a]',
-        '-c:v', 'libx264',
-        '-c:a', 'aac',
-        '-b:a', '192k',
-        '-pix_fmt', 'yuv420p',
-        '-shortest',
-        'output.mp4'
-      ]);
+      // 3. Executa o comando FFmpeg
+      if (isVideo) {
+        // Se for VÍDEO de fundo (B-Roll): Corta no meio, remove o áudio original dele e junta com a voz e música
+        await ffmpeg.exec([
+            '-stream_loop', '-1', // Loopa o vídeo infinito até o áudio acabar
+            '-i', inputFilename,
+            '-i', 'audio.mp3',
+            '-i', 'music.mp3',
+            '-filter_complex', '[0:v]scale=-2:1920,crop=1080:1920:exact=1[v];[2:a]volume=0.15[bgm];[1:a][bgm]amix=inputs=2:duration=first[a]',
+            '-map', '[v]',
+            '-map', '[a]',
+            '-c:v', 'libx264',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-pix_fmt', 'yuv420p',
+            '-shortest',
+            'output.mp4'
+        ]);
+      } else {
+        // Se for IMAGEM estática: Adiciona o zoompan
+        await ffmpeg.exec([
+            '-loop', '1', 
+            '-i', inputFilename,
+            '-i', 'audio.mp3',
+            '-i', 'music.mp3',
+            '-filter_complex', '[0:v]scale=-2:2000,crop=1080:1920,zoompan=z=\'min(zoom+0.001,1.5)\':d=1500:x=\'iw/2-(iw/zoom/2)\':y=\'ih/2-(ih/zoom/2)\':s=1080x1920[v];[2:a]volume=0.15[bgm];[1:a][bgm]amix=inputs=2:duration=first[a]',
+            '-map', '[v]',
+            '-map', '[a]',
+            '-c:v', 'libx264',
+            '-c:a', 'aac',
+            '-b:a', '192k',
+            '-pix_fmt', 'yuv420p',
+            '-shortest',
+            'output.mp4'
+        ]);
+      }
 
       const data = await ffmpeg.readFile('output.mp4');
       const videoBlob = new Blob([data as any], { type: 'video/mp4' });
