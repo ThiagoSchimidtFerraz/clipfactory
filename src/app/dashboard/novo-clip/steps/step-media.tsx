@@ -89,20 +89,43 @@ export default function StepMedia() {
             <div className="space-y-3">
               <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Deixar a IA Criar</Label>
               
-              <div className="flex flex-col gap-2 h-64">
-                  <textarea 
-                    id="ai-scenario-input"
-                    placeholder="Ex: Pessoa correndo no parque num dia ensolarado..."
-                    className="w-full bg-[#0A0A0A] border border-[#333] hover:border-[#00E5FF] focus:border-[#00E5FF] transition-all text-white p-3 rounded-lg text-sm resize-none h-20 outline-none"
-                  />
+              <div className="flex flex-col gap-3">
+                  <div className="space-y-2">
+                    <input 
+                      id="ai-scenario-input"
+                      placeholder="Descreva a cena (ou clique nas opções abaixo)..."
+                      className="w-full bg-[#0A0A0A] border border-[#333] hover:border-[#00E5FF] focus:border-[#00E5FF] transition-all text-white p-3 rounded-lg text-sm outline-none"
+                    />
+                    {/* Caixinhas intuitivas de sugestão */}
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { label: "🏃‍♂️ Treino/Academia", val: "gym workout fitness" },
+                        { label: "💻 Escritório", val: "office working laptop" },
+                        { label: "🌿 Natureza/Paz", val: "nature relaxing peace" },
+                        { label: "🏠 Em casa", val: "cozy home lifestyle" },
+                        { label: "📦 Entregas", val: "delivery shipping box" }
+                      ].map(tag => (
+                        <button
+                          key={tag.val}
+                          onClick={() => {
+                            const input = document.getElementById("ai-scenario-input") as HTMLInputElement;
+                            if (input) input.value = tag.val;
+                          }}
+                          className="bg-[#1A1A1A] border border-[#333] hover:border-[#00E5FF] text-xs text-[#A3A3A3] hover:text-white px-3 py-1.5 rounded-full transition-all"
+                        >
+                          {tag.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   
-                  <div className="flex gap-2 flex-1">
+                  <div className="flex gap-2 h-40">
                       {/* Botão de Imagem IA */}
                       <div 
                         onClick={async () => {
                             if (images.length >= 5) return;
                             const btn = document.getElementById("ai-btn-text");
-                            const scenarioInput = document.getElementById("ai-scenario-input") as HTMLTextAreaElement;
+                            const scenarioInput = document.getElementById("ai-scenario-input") as HTMLInputElement;
                             const customScenario = scenarioInput?.value || "in a natural environment";
                             
                             if(btn) btn.innerText = "...";
@@ -144,13 +167,12 @@ export default function StepMedia() {
                         onClick={async () => {
                             if (images.length >= 5) return;
                             const btn = document.getElementById("vid-btn-text");
-                            const scenarioInput = document.getElementById("ai-scenario-input") as HTMLTextAreaElement;
+                            const scenarioInput = document.getElementById("ai-scenario-input") as HTMLInputElement;
                             const q = encodeURIComponent(scenarioInput?.value || briefing.productName || "lifestyle");
                             
                             if(btn) btn.innerText = "Buscando...";
                             
                             try {
-                                // Usa a chave fornecida pelo usuário
                                 const apiKey = "57387230-91862bf503483aead7cc2d79d";
                                 const url = `https://pixabay.com/api/videos/?key=${apiKey}&q=${q}&video_type=film&per_page=3&safesearch=true`;
                                 
@@ -158,16 +180,14 @@ export default function StepMedia() {
                                 const data = await res.json();
                                 
                                 if (data.hits && data.hits.length > 0) {
-                                    // Pega o primeiro vídeo da busca (preferência por vídeos verticais ou o melhor tamanho)
                                     const hit = data.hits[0];
                                     const videoUrl = hit.videos.medium.url || hit.videos.tiny.url;
                                     
                                     const current = useClipStore.getState().briefing.images || [];
-                                    // Salvamos a URL do vídeo na lista (assembly.tsx vai detectar se for .mp4)
                                     updateBriefing({ images: [...current, videoUrl] });
                                     if(btn) btn.innerText = "Puxar Vídeo";
                                 } else {
-                                    alert("Nenhum vídeo encontrado para este cenário. Tente palavras em inglês (ex: runner, gym, office) para achar mais fácil.");
+                                    alert("Nenhum vídeo encontrado. Tente um cenário mais simples ou em inglês.");
                                     if(btn) btn.innerText = "Puxar Vídeo";
                                 }
                             } catch (e) {
