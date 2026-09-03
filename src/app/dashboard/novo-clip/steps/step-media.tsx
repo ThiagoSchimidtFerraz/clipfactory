@@ -89,44 +89,54 @@ export default function StepMedia() {
             <div className="space-y-3">
               <Label className="text-xs font-semibold text-[#888] uppercase tracking-wider">Deixar a IA Criar</Label>
               
-              <div 
-                onClick={async () => {
-                    if (images.length >= 5) return;
-                    const btn = document.getElementById("ai-btn-text");
-                    if(btn) btn.innerText = "Pensando e gerando...";
-                    
-                    try {
-                        const basePrompt = `cinematic lifestyle photography of ${briefing.productName || "a luxury product"} in a natural environment, held or used by an authentic brazilian person with clear natural skin, realistic brazilian features, hyperrealistic, professional 8k resolution, no foreign stereotypes, perfect product showcase`;
+              <div className="flex flex-col gap-2 h-64">
+                  <textarea 
+                    id="ai-scenario-input"
+                    placeholder="Ex: Pessoa correndo no parque num dia ensolarado..."
+                    className="w-full bg-[#0A0A0A] border border-[#333] hover:border-[#00E5FF] focus:border-[#00E5FF] transition-all text-white p-3 rounded-lg text-sm resize-none h-20 outline-none"
+                  />
+                  
+                  <div 
+                    onClick={async () => {
+                        if (images.length >= 5) return;
+                        const btn = document.getElementById("ai-btn-text");
+                        const scenarioInput = document.getElementById("ai-scenario-input") as HTMLTextAreaElement;
+                        const customScenario = scenarioInput?.value || "in a natural environment";
                         
-                        const res = await fetch("/api/generate-image", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ prompt: basePrompt })
-                        });
+                        if(btn) btn.innerText = "Pensando e gerando...";
                         
-                        const data = await res.json();
-                        
-                        if (data.image) {
-                            const current = useClipStore.getState().briefing.images || [];
-                            updateBriefing({ images: [...current, data.image] });
-                            if(btn) btn.innerText = "Gerar mais com IA";
-                        } else {
-                            throw new Error(data.error || "Erro desconhecido");
+                        try {
+                            const basePrompt = `cinematic lifestyle photography of ${briefing.productName || "a luxury product"}, ${customScenario}, held or used by an authentic brazilian person with clear natural skin, realistic brazilian features, hyperrealistic, professional 8k resolution, no foreign stereotypes, perfect product showcase`;
+                            
+                            const res = await fetch("/api/generate-image", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ prompt: basePrompt })
+                            });
+                            
+                            const data = await res.json();
+                            
+                            if (data.image) {
+                                const current = useClipStore.getState().briefing.images || [];
+                                updateBriefing({ images: [...current, data.image] });
+                                if(btn) btn.innerText = "Gerar Imagem com IA";
+                            } else {
+                                throw new Error(data.error || "Erro desconhecido");
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            alert("Erro ao gerar imagem. Tente novamente.");
+                            if(btn) btn.innerText = "Gerar Imagem com IA";
                         }
-                    } catch (e) {
-                        console.error(e);
-                        alert("Erro ao gerar imagem. Tente novamente.");
-                        if(btn) btn.innerText = "Gerar Imagem com IA";
-                    }
-                }}
-                className="border border-[#333] bg-[#0A0A0A] hover:border-[#00E5FF] hover:shadow-[0_0_20px_rgba(0,229,255,0.15)] transition-all h-64 flex flex-col items-center justify-center cursor-pointer group rounded-xl relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-[#0047FF]/5 to-[#00E5FF]/5" />
-                <div className="w-16 h-16 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-4 transition-colors relative z-10 border border-[#222] group-hover:border-[#00E5FF]/50">
-                  <span className="text-2xl">✨</span>
-                </div>
-                <span id="ai-btn-text" className="text-sm font-semibold text-white relative z-10">Gerar Imagem com IA</span>
-                <span className="text-xs text-[#00E5FF] mt-2 text-center px-4 relative z-10">Totalmente automático e grátis</span>
+                    }}
+                    className="border border-[#333] bg-[#111] hover:border-[#00E5FF] hover:shadow-[0_0_20px_rgba(0,229,255,0.15)] transition-all flex-1 flex flex-col items-center justify-center cursor-pointer group rounded-xl relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#0047FF]/5 to-[#00E5FF]/5" />
+                    <div className="w-10 h-10 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-2 transition-colors relative z-10 border border-[#222] group-hover:border-[#00E5FF]/50">
+                      <span className="text-lg">✨</span>
+                    </div>
+                    <span id="ai-btn-text" className="text-sm font-semibold text-white relative z-10">Gerar Imagem com IA</span>
+                  </div>
               </div>
             </div>
         </div>
