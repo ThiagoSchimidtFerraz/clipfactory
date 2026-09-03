@@ -25,7 +25,10 @@ export default function StepAssembly() {
       const ffmpeg = new FFmpeg();
       
       ffmpeg.on("progress", ({ progress: p }) => {
-        setProgress(10 + Math.round(p * 80)); // 10% a 90%
+        // O FFmpeg as vezes se perde no cálculo de tempo com loops, então nós travamos visualmente em 99%
+        let percent = 10 + Math.round(p * 80);
+        if (percent > 99) percent = 99;
+        setProgress(percent);
       });
 
       const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
@@ -39,6 +42,16 @@ export default function StepAssembly() {
       // 1. Pega o áudio que geramos na store (ou um de teste)
       const audioUrl = briefing.generatedAudioUrl || "https://www.w3schools.com/html/horse.mp3";
       await ffmpeg.writeFile('audio.mp3', await fetchFile(audioUrl));
+
+      // Calcula a duração exata do áudio da voz para travar o FFmpeg e evitar o loop eterno
+      const audioDuration = await new Promise<number>((resolve) => {
+        const audio = new Audio(audioUrl);
+        audio.addEventListener('loadedmetadata', () => {
+            resolve(audio.duration);
+        });
+        audio.addEventListener('error', () => resolve(15)); // Fallback de 15s
+      });
+      const durationStr = audioDuration.toFixed(2);
 
       // 2. Transforma a primeira mídia do state no arquivo de input do ffmpeg
       const rawMedia = briefing.images && briefing.images.length > 0
@@ -71,11 +84,13 @@ export default function StepAssembly() {
       // 3. Executa o comando FFmpeg
       if (isVideo) {
         // Se for VÍDEO de fundo (B-Roll): Corta no meio, remove o áudio original dele e junta com a voz e música
+        // -t crava o tempo exato e mata o processo na hora certa!
         await ffmpeg.exec([
             '-stream_loop', '-1', // Loopa o vídeo infinito até o áudio acabar
             '-i', inputFilename,
             '-i', 'audio.mp3',
             '-i', 'music.mp3',
+            '-t', durationStr, // Tempo exato da locução!
             '-filter_complex', '[0:v]scale=-2:1920,crop=1080:1920:exact=1[v];[2:a]volume=0.15[bgm];[1:a][bgm]amix=inputs=2:duration=first[a]',
             '-map', '[v]',
             '-map', '[a]',
@@ -93,6 +108,7 @@ export default function StepAssembly() {
             '-i', inputFilename,
             '-i', 'audio.mp3',
             '-i', 'music.mp3',
+            '-t', durationStr, // Tempo exato da locução!
             '-filter_complex', '[0:v]scale=-2:2000,crop=1080:1920,zoompan=z=\'min(zoom+0.001,1.5)\':d=1500:x=\'iw/2-(iw/zoom/2)\':y=\'ih/2-(ih/zoom/2)\':s=1080x1920[v];[2:a]volume=0.15[bgm];[1:a][bgm]amix=inputs=2:duration=first[a]',
             '-map', '[v]',
             '-map', '[a]',
