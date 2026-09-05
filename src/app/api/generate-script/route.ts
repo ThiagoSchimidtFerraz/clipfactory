@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { productName, productUrl, productDetails, objective, visualStyle } = await req.json();
+    const { productName, productUrl, productDetails, objective, visualStyle, aiModel } = await req.json();
 
     if (!productName) {
       return NextResponse.json({ error: "Nome do produto é obrigatório" }, { status: 400 });
@@ -23,6 +23,9 @@ A estrutura OBRIGATÓRIA deve ser:
 
 Não inclua cabeçalhos como "Gancho:" no meio do texto, me dê o texto corrido e pronto para ser copiado e colado num gerador de voz.`;
 
+    // Se o usuário não mandar o modelo do front, usa o Llama grátis pra não estourar a conta
+    const modelToUse = aiModel || "meta-llama/llama-3-8b-instruct:free";
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -30,7 +33,7 @@ Não inclua cabeçalhos como "Gancho:" no meio do texto, me dê o texto corrido 
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "anthropic/claude-3.5-sonnet", // Modelo premium da Anthropic, melhor copywriting!
+        model: modelToUse,
         messages: [{ role: "user", content: prompt }]
       })
     });

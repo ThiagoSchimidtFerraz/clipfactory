@@ -19,6 +19,7 @@ export default function StepScript() {
     scripts[selectedScript]?.content || ""
   );
   const [generating, setGenerating] = useState(false);
+  const [selectedAiModel, setSelectedAiModel] = useState("anthropic/claude-3.5-sonnet");
 
   const handleAiAssist = async () => {
     setGenerating(true);
@@ -31,7 +32,8 @@ export default function StepScript() {
           productUrl: briefing.productUrl,
           productDetails: briefing.productDetails,
           objective: briefing.objective,
-          visualStyle: briefing.visualStyle 
+          visualStyle: briefing.visualStyle,
+          aiModel: selectedAiModel
         }),
       });
       const data = await response.json();
@@ -67,13 +69,26 @@ export default function StepScript() {
             <MessageSquare className="w-4 h-4 text-[#0047FF]" />
             Texto do Locutor
           </Label>
-          <Button 
-            onClick={handleAiAssist}
-            disabled={generating}
-            className="bg-gradient-to-r from-[#0047FF] to-[#00E5FF] hover:from-[#0033CC] hover:to-[#00CCEE] text-white font-bold h-12 px-8 rounded-lg shadow-[0_0_20px_rgba(0,119,255,0.4)] transition-all animate-in fade-in"
-          >
-            {generating ? "Pensando no Roteiro..." : <><Sparkles className="w-5 h-5 mr-2" /> Gerar Roteiro com Inteligência Artificial</>}
-          </Button>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <select 
+              value={selectedAiModel}
+              onChange={(e) => setSelectedAiModel(e.target.value)}
+              className="bg-[#0A0A0A] border border-[#333] text-xs font-semibold text-white h-12 px-4 rounded-lg outline-none focus:border-[#00E5FF] transition-all"
+            >
+              <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (100% Grátis)</option>
+              <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Premium/Pago)</option>
+              <option value="google/gemini-pro-1.5">Gemini 1.5 Pro</option>
+            </select>
+
+            <Button 
+              onClick={handleAiAssist}
+              disabled={generating}
+              className="bg-gradient-to-r from-[#0047FF] to-[#00E5FF] hover:from-[#0033CC] hover:to-[#00CCEE] text-white font-bold h-12 px-8 rounded-lg shadow-[0_0_20px_rgba(0,119,255,0.4)] transition-all animate-in fade-in"
+            >
+              {generating ? "Pensando..." : <><Sparkles className="w-5 h-5 mr-2" /> Gerar Roteiro</>}
+            </Button>
+          </div>
         </div>
         
         <Textarea

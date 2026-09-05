@@ -44,10 +44,12 @@ export function Sidebar() {
     <div className="flex flex-col h-full bg-[#050505] border-r border-[#1A1A1A]">
       <div className="h-20 flex items-center px-6 border-b border-[#1A1A1A]">
         <Link href="/dashboard/novo-clip" onClick={onNavigate} className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-[#0047FF] to-[#00E5FF] rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(0,229,255,0.4)]">
-            <Flame className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-black text-white uppercase tracking-tighter">
+          <img 
+            src="https://media.licdn.com/dms/image/v2/D4D0BAQHtQXlUbx-vcQ/company-logo_200_200/company-logo_200_200/0/1739128490716/digital_growth_br_logo?e=2147483647&v=beta&t=NTqSOjCRovYBgacHSy2Jj4DxtTaiBUmaJNS9HDLWwB8" 
+            alt="DG Logo" 
+            className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.2)]"
+          />
+          <span className="text-[17px] font-black text-white uppercase tracking-tight whitespace-nowrap">
             DG Clips Factory
           </span>
         </Link>
