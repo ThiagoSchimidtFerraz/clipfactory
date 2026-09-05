@@ -34,7 +34,8 @@ Não inclua cabeçalhos como "Gancho:" no meio do texto, me dê o texto corrido 
       },
       body: JSON.stringify({
         model: modelToUse,
-        messages: [{ role: "user", content: prompt }]
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 300 // Roteiro é pequeno. Isso evita erro "402 Payment Required" por projeção de saldo.
       })
     });
 
