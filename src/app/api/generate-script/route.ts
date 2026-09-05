@@ -23,8 +23,8 @@ A estrutura OBRIGATÓRIA deve ser:
 
 Não inclua cabeçalhos como "Gancho:" no meio do texto, me dê o texto corrido e pronto para ser copiado e colado num gerador de voz.`;
 
-    // Se o usuário não mandar o modelo do front, usa o Llama grátis pra não estourar a conta
-    const modelToUse = aiModel || "meta-llama/llama-3-8b-instruct:free";
+    // Se o usuário não mandar o modelo do front, usa o Nvidia grátis pra não estourar a conta
+    const modelToUse = aiModel || "nvidia/nemotron-3.5-lightning:free";
 
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

@@ -22,7 +22,7 @@ export default function StepScript() {
     scripts[selectedScript]?.content || ""
   );
   const [generating, setGenerating] = useState(false);
-  const [selectedAiModel, setSelectedAiModel] = useState("anthropic/claude-3.5-sonnet");
+  const [selectedAiModel, setSelectedAiModel] = useState("anthropic/claude-sonnet-5");
 
   useEffect(() => {
     if (session) {
@@ -90,9 +90,9 @@ export default function StepScript() {
                 onChange={(e) => setSelectedAiModel(e.target.value)}
                 className="bg-[#0A0A0A] border border-[#333] text-xs font-semibold text-white h-12 px-4 rounded-lg outline-none focus:border-[#00E5FF] transition-all"
               >
-                <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (100% Grátis)</option>
-                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Premium/Pago)</option>
-                <option value="google/gemini-pro-1.5">Gemini 1.5 Pro</option>
+                <option value="nvidia/nemotron-3.5-lightning:free">Nvidia Nemotron (100% Grátis)</option>
+                <option value="anthropic/claude-sonnet-5">Claude 5 Sonnet (Premium/Pago)</option>
+                <option value="google/gemini-3.5-flash">Gemini 3.5 Flash</option>
               </select>
             )}
 
