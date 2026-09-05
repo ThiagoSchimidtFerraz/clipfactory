@@ -48,7 +48,7 @@ export function Sidebar() {
             <Flame className="w-5 h-5 text-white" />
           </div>
           <span className="text-xl font-black text-white uppercase tracking-tighter">
-            Digital Growth
+            DG Clips Factory
           </span>
         </Link>
       </div>
@@ -133,11 +133,11 @@ export function Sidebar() {
           <Link href="/dashboard/novo-clip" className="flex items-center gap-2">
             <img 
               src="https://media.licdn.com/dms/image/v2/D4D0BAQHtQXlUbx-vcQ/company-logo_200_200/company-logo_200_200/0/1739128490716/digital_growth_br_logo?e=2147483647&v=beta&t=NTqSOjCRovYBgacHSy2Jj4DxtTaiBUmaJNS9HDLWwB8" 
-              alt="Digital Growth Logo" 
+              alt="DG Clips Factory Logo" 
               className="w-7 h-7 rounded-md"
             />
             <span className="text-lg font-black text-white uppercase tracking-tighter">
-              Digital Growth
+              DG Clips Factory
             </span>
           </Link>
 

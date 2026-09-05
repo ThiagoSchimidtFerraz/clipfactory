@@ -48,7 +48,7 @@ export default function LoginPage() {
               <Flame className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-2xl font-black text-white uppercase tracking-tighter">
-              Digital Growth
+              DG Clips Factory
             </h1>
             <p className="text-[#888] text-sm mt-1">Faça login para acessar o estúdio</p>
           </div>

@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,16 +23,28 @@ A estrutura OBRIGATÓRIA deve ser:
 
 Não inclua cabeçalhos como "Gancho:" no meio do texto, me dê o texto corrido e pronto para ser copiado e colado num gerador de voz.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: prompt,
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "anthropic/claude-3.5-sonnet", // Modelo premium da Anthropic, melhor copywriting!
+        messages: [{ role: "user", content: prompt }]
+      })
     });
 
-    const script = response.text || "";
+    if (!response.ok) {
+        throw new Error(`Erro na API do OpenRouter: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const script = data.choices[0].message.content || "";
 
     return NextResponse.json({ script });
   } catch (error: any) {
-    console.error("Erro na API do Gemini:", error);
+    console.error("Erro no OpenRouter:", error);
     return NextResponse.json(
       { error: "Falha ao gerar roteiro", details: error.message },
       { status: 500 }

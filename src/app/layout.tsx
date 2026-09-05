@@ -11,7 +11,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Digital Growth Clips | Escale suas vendas",
+  title: "DG Clips Factory | Escale suas vendas",
   description: "Crie clips de alta conversão para seus produtos em minutos.",
 };
 
