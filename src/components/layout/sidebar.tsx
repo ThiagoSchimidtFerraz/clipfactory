@@ -45,7 +45,7 @@ export function Sidebar() {
       <div className="h-20 flex items-center px-6 border-b border-[#1A1A1A]">
         <Link href="/dashboard/novo-clip" onClick={onNavigate} className="flex items-center gap-3">
           <img 
-            src="https://media.licdn.com/dms/image/v2/D4D0BAQHtQXlUbx-vcQ/company-logo_200_200/company-logo_200_200/0/1739128490716/digital_growth_br_logo?e=2147483647&v=beta&t=NTqSOjCRovYBgacHSy2Jj4DxtTaiBUmaJNS9HDLWwB8" 
+            src="/dg-logo.jpg" 
             alt="DG Logo" 
             className="w-8 h-8 rounded-lg shadow-[0_0_15px_rgba(0,229,255,0.2)]"
           />
@@ -134,7 +134,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between px-4 h-16">
           <Link href="/dashboard/novo-clip" className="flex items-center gap-2">
             <img 
-              src="https://media.licdn.com/dms/image/v2/D4D0BAQHtQXlUbx-vcQ/company-logo_200_200/company-logo_200_200/0/1739128490716/digital_growth_br_logo?e=2147483647&v=beta&t=NTqSOjCRovYBgacHSy2Jj4DxtTaiBUmaJNS9HDLWwB8" 
+              src="/dg-logo.jpg" 
               alt="DG Clips Factory Logo" 
               className="w-7 h-7 rounded-md"
             />
