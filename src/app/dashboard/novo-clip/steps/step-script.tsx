@@ -10,16 +10,29 @@ import {
   Sparkles,
   MessageSquare
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 
 export default function StepScript() {
   const { scripts, selectedScript, briefing, prevStep, nextStep } = useClipStore();
+  const { data: session } = useSession();
+  const [isAdmin, setIsAdmin] = useState(false);
     
   const [customText, setCustomText] = useState(
     scripts[selectedScript]?.content || ""
   );
   const [generating, setGenerating] = useState(false);
   const [selectedAiModel, setSelectedAiModel] = useState("anthropic/claude-3.5-sonnet");
+
+  useEffect(() => {
+    if (session) {
+      fetch("/api/user/balance")
+        .then(res => res.json())
+        .then(data => {
+          setIsAdmin(data.role === "ADMIN");
+        });
+    }
+  }, [session]);
 
   const handleAiAssist = async () => {
     setGenerating(true);
@@ -71,15 +84,17 @@ export default function StepScript() {
           </Label>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            <select 
-              value={selectedAiModel}
-              onChange={(e) => setSelectedAiModel(e.target.value)}
-              className="bg-[#0A0A0A] border border-[#333] text-xs font-semibold text-white h-12 px-4 rounded-lg outline-none focus:border-[#00E5FF] transition-all"
-            >
-              <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (100% Grátis)</option>
-              <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Premium/Pago)</option>
-              <option value="google/gemini-pro-1.5">Gemini 1.5 Pro</option>
-            </select>
+            {isAdmin && (
+              <select 
+                value={selectedAiModel}
+                onChange={(e) => setSelectedAiModel(e.target.value)}
+                className="bg-[#0A0A0A] border border-[#333] text-xs font-semibold text-white h-12 px-4 rounded-lg outline-none focus:border-[#00E5FF] transition-all"
+              >
+                <option value="meta-llama/llama-3-8b-instruct:free">Llama 3 (100% Grátis)</option>
+                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (Premium/Pago)</option>
+                <option value="google/gemini-pro-1.5">Gemini 1.5 Pro</option>
+              </select>
+            )}
 
             <Button 
               onClick={handleAiAssist}
