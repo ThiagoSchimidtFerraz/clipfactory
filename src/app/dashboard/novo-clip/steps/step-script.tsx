@@ -23,6 +23,8 @@ export default function StepScript() {
   );
   const [generating, setGenerating] = useState(false);
   const [selectedAiModel, setSelectedAiModel] = useState("anthropic/claude-sonnet-5");
+  const [visualDirection, setVisualDirection] = useState("");
+  const [musicVibe, setMusicVibe] = useState("");
 
   useEffect(() => {
     if (session) {
@@ -51,8 +53,10 @@ export default function StepScript() {
       });
       const data = await response.json();
       
-      if (data.script) {
-        setCustomText(data.script);
+      if (data.spokenScript) {
+        setCustomText(data.spokenScript);
+        setVisualDirection(data.visualDirection || "");
+        setMusicVibe(data.musicVibe || "");
       } else {
         alert("Ops, não veio roteiro: " + (data.error || "erro desconhecido"));
       }
@@ -105,6 +109,16 @@ export default function StepScript() {
             </Button>
           </div>
         </div>
+
+        {visualDirection && (
+          <div className="bg-[#111] border border-[#333] rounded-xl p-5 mb-4 space-y-3 animate-in fade-in slide-in-from-top-2">
+            <h3 className="text-sm font-semibold text-[#00E5FF] uppercase tracking-wider">🎬 Direção de Arte</h3>
+            <p className="text-[#A3A3A3] text-sm leading-relaxed">{visualDirection}</p>
+            
+            <h3 className="text-sm font-semibold text-[#00E5FF] uppercase tracking-wider mt-4">🎵 Trilha Sonora</h3>
+            <p className="text-[#A3A3A3] text-sm leading-relaxed">{musicVibe}</p>
+          </div>
+        )}
         
         <Textarea
           value={customText}
