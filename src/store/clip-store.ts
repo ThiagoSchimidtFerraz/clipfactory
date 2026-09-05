@@ -24,6 +24,7 @@ export interface ClipState {
     format: string;
     visualStyle?: string;
     voice?: string;
+    videoLength?: number;
     generatedAudioUrl?: string;
     platform: "tiktok" | "reels" | "shorts" | "shopee" | "mercadolivre";
     images: string[];
@@ -71,6 +72,7 @@ const initialState = {
     tone: "casual" as const,
     platform: "tiktok" as const,
     format: "9:16" as const,
+    videoLength: 15,
     images: [],
   },
   scripts: [],

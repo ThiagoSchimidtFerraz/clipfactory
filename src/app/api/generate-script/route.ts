@@ -2,11 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
-    const { productName, productUrl, productDetails, objective, visualStyle, aiModel } = await req.json();
+    const { productName, productUrl, productDetails, objective, visualStyle, aiModel, videoLength } = await req.json();
 
     if (!productName) {
       return NextResponse.json({ error: "Nome do produto é obrigatório" }, { status: 400 });
     }
+
+    const maxDuration = videoLength || 15;
 
     const prompt = `Você é um copywriter de altíssima conversão e diretor de arte focado em vídeos curtos (TikTok/Reels).
 Produto: "${productName}".
@@ -15,13 +17,13 @@ ${productUrl ? `Referência: ${productUrl}` : ''}
 Objetivo: ${objective === 'escassez' ? 'Urgência e promoção relâmpago' : objective === 'desejo' ? 'Criar desejo com benefícios premium' : 'Venda direta e agressiva'}.
 Estilo Visual: ${visualStyle}.
 
-Crie um roteiro de até 15 segundos.
+Crie um roteiro estritamente para um vídeo de até ${maxDuration} segundos.
 Você OBRIGATORIAMENTE DEVE retornar APENAS um objeto JSON válido (sem textos antes ou depois, sem crases de markdown).
 Estrutura do JSON:
 {
   "visualDirection": "Descreva o ambiente, tipo de imagem de fundo ou câmera (ex: Câmera rápida, fundo de academia luxuosa).",
   "musicVibe": "Descreva o estilo da música de fundo (ex: Eletrônica tensa, Hip-hop motivacional).",
-  "spokenScript": "O texto EXATO que será narrado, máximo 5 frases. Crie um gancho agressivo, foque na dor e termine com CTA imperativo. Sem cabeçalhos ou dicas, apenas a fala crua."
+  "spokenScript": "O texto EXATO que será narrado. Para ${maxDuration} segundos, escreva no MÁXIMO ${Math.max(1, Math.floor(maxDuration / 4))} frases. Crie um gancho agressivo, foque na dor e termine com CTA imperativo. Sem cabeçalhos ou dicas, apenas a fala crua."
 }`;
 
     const modelToUse = aiModel || "nvidia/nemotron-3.5-lightning:free";

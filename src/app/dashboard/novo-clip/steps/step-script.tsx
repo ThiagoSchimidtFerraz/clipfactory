@@ -48,6 +48,7 @@ export default function StepScript() {
           productDetails: briefing.productDetails,
           objective: briefing.objective,
           visualStyle: briefing.visualStyle,
+          videoLength: briefing.videoLength,
           aiModel: selectedAiModel
         }),
       });

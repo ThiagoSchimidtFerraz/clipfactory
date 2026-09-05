@@ -169,8 +169,41 @@ export default function StepStrategy() {
             
             <div className="flex justify-end pt-8">
               <Button
-                onClick={nextStep}
+                onClick={handleNextQ}
                 disabled={!briefing.format}
+                className="bg-[#00E5FF] hover:bg-[#00CCEE] text-black font-bold h-11 px-8 rounded-lg"
+              >
+                Continuar <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* PERGUNTA 4: DURAÇÃO */}
+        {qIndex === 4 && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <Label className="text-sm font-semibold text-[#888] uppercase tracking-wider">5. Qual a Duração Estimada?</Label>
+            <div className="grid grid-cols-5 gap-2">
+              {[5, 10, 15, 20, 30].map((sec) => (
+                <button
+                  key={sec}
+                  onClick={() => updateBriefing({ videoLength: sec })}
+                  className={cn(
+                    "py-5 px-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all duration-300",
+                    briefing.videoLength === sec
+                      ? "bg-[#0047FF]/10 border-[#00E5FF] text-white scale-[1.05]"
+                      : "bg-[#0A0A0A] border-[#333] text-[#888] hover:border-[#666] hover:bg-[#111]"
+                  )}
+                >
+                  <span className="font-bold text-lg">{sec}s</span>
+                </button>
+              ))}
+            </div>
+            
+            <div className="flex justify-end pt-8">
+              <Button
+                onClick={nextStep}
+                disabled={!briefing.videoLength}
                 className="bg-gradient-to-r from-[#0047FF] to-[#00E5FF] hover:from-[#0033CC] hover:to-[#00CCEE] text-white font-bold h-12 px-10 rounded-lg shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] animate-pulse"
               >
                 Avançar para Roteiro <ArrowRight className="w-5 h-5 ml-2" />
